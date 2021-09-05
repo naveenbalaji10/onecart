@@ -1,18 +1,28 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Row, Col, ListGroup, Card, Image, Button } from 'react-bootstrap'
+import { Row, Col, ListGroup, Card, Image, Button, Form } from 'react-bootstrap'
 import Rating from '../components/Rating'
 import { useDispatch, useSelector } from 'react-redux'
 import { listDetails } from '../reducers/Actions/productActions'
 import { Loader, Message } from 'semantic-ui-react'
 
-const ProductScreen = ({ match }) => {
+const ProductScreen = ({ match, history }) => {
+  const [qty, setQty] = useState(1)
+
   const dispatch = useDispatch()
+
   const productDetails = useSelector((state) => state.productDetails)
+
   useEffect(() => {
     dispatch(listDetails(match.params._id))
   }, [match, dispatch])
+
   const { loading, error, product } = productDetails
+
+  const handleClick = () => {
+    history.push(`/cart/${match.params._id}?qty=${qty}`)
+  }
+
   return (
     <>
       <Link to='/' className='btn btn-light my-3' />
@@ -63,9 +73,30 @@ const ProductScreen = ({ match }) => {
                     </Col>
                   </Row>
                 </ListGroup.Item>
+                {product.countInStock > 0 && (
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>Qty:</Col>
+                      <Col>
+                        <Form.Control
+                          as='select'
+                          value={qty}
+                          onChange={(e) => setQty(e.target.value)}
+                        >
+                          {[...Array(product.countInStock).keys()].map((x) => (
+                            <option key={x + 1} value={x + 1}>
+                              {x + 1}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Col>
+                    </Row>
+                  </ListGroup.Item>
+                )}
                 <ListGroup.Item>
                   <Row>
                     <Button
+                      onClick={handleClick}
                       className='btn-block'
                       type='button'
                       disabled={product.countInStock === 0}
