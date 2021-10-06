@@ -98,5 +98,75 @@ const updateUser = aysncHandler(async (req, res) => {
     throw new Error('user not found')
   }
 })
+//des get all users
+//route put /api/users
+//private
 
-export { authUsers, getUserProfile, registerUsers, updateUser }
+const getUsers = aysncHandler(async (req, res) => {
+  const users = await User.find({})
+  res.json(users)
+})
+
+//remove user
+//route put /api/users/:id
+//private
+
+const deleteUser = aysncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+  if (user) {
+    await user.remove()
+    res.json({ messae: 'user removed' })
+  } else {
+    res.status(404)
+    throw new Error('user not found')
+  }
+})
+
+//get user by id
+//route get /api/users/:id
+//private
+
+const getUser = aysncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).select('-password')
+  if (user) {
+    res.json(user)
+  } else {
+    res.status(404)
+    throw new Error('user not found')
+  }
+})
+
+//des update user by admin
+//route put /api/users/:id
+//private
+
+const updateUserById = aysncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+
+  if (user) {
+    user.name = req.body.name || user.name
+    user.email = req.body.email || user.email
+    user.isAdmin = req.body.isAdmin
+    const updatedUser = await user.save()
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+    })
+  } else {
+    res.status(404)
+    throw new Error('user not found')
+  }
+})
+
+export {
+  authUsers,
+  getUserProfile,
+  registerUsers,
+  updateUser,
+  getUsers,
+  deleteUser,
+  getUser,
+  updateUserById,
+}

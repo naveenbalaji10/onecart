@@ -13,6 +13,14 @@ import {
   USER_PROFILE_SUCCESS,
   USER_PROFILE_FAIL,
   USER_PROFILE_RESET,
+  USER_DETAILS_RESET,
+  USERSLIST_REQUEST,
+  USERSLIST_SUCCESS,
+  USERSLIST_FAIL,
+  USERSLIST_RESET,
+  USERSREMOVE_REQUEST,
+  USERSREMOVE_SUCCESS,
+  USERSREMOVE_FAIL,
 } from '../ActionTypes/userTypes'
 
 const userReducer = (state = {}, action) => {
@@ -76,6 +84,10 @@ const userDetailsReducer = (state = { user: {} }, action) => {
         loading: false,
         error: action.payload,
       }
+    case USER_DETAILS_RESET:
+      return {
+        user: {},
+      }
     default:
       return state
   }
@@ -102,5 +114,54 @@ const userProfileReducer = (state = {}, action) => {
       return state
   }
 }
+const userListReducer = (state = { users: [] }, action) => {
+  switch (action.type) {
+    case USERSLIST_REQUEST:
+      return {
+        loading: true,
+      }
+    case USERSLIST_SUCCESS:
+      return {
+        loading: false,
+        users: action.payload,
+      }
+    case USERSLIST_FAIL:
+      return {
+        loading: false,
+        error: action.payload,
+      }
+    case USERSLIST_RESET:
+      return { users: [] }
+    default:
+      return state
+  }
+}
+const userDeleteReducer = (state = {}, action) => {
+  switch (action.type) {
+    case USERSREMOVE_REQUEST:
+      return {
+        loading: true,
+      }
+    case USERSREMOVE_SUCCESS:
+      return {
+        loading: false,
+        success: true,
+      }
+    case USERSREMOVE_FAIL:
+      return {
+        loading: false,
+        error: action.payload,
+      }
+    default:
+      return state
+  }
+}
 
-export { userReducer, registerReducer, userDetailsReducer, userProfileReducer }
+export {
+  userReducer,
+  registerReducer,
+  userDetailsReducer,
+  userProfileReducer,
+  userListReducer,
+  userDeleteReducer,
+}

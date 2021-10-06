@@ -1,13 +1,56 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Row, Col, Image, ListGroup, Button, Card } from 'react-bootstrap'
 import Message from '../components/Message'
 import CheckoutStep from '../components/CheckoutStep'
+import { createOrder } from '../reducers/Actions/orderAction'
 
-const PlaceOrderScreen = () => {
+const PlaceOrderScreen = ({ history }) => {
   const cart = useSelector((state) => state.cart)
 
+  const orderCreate = useSelector((state) => state.orderCreate)
+  const { success, error, order } = orderCreate
+  useEffect(() => {
+    if (success) {
+      history.push(`/order/${order._id}`)
+    }
+    // eslint-disable-next-line
+  }, [history, success])
+
+  // itemsprice,taxprice,shippingprice ,total price caculations
+  const addDecimals = (num) => {
+    return Math.round((num * 100) / 100).toFixed(2)
+  }
+  cart.itemsPrice = addDecimals(
+    cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0)
+  )
+  cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100)
+  cart.taxPrice = addDecimals(Number(cart.itemsPrice * 0.15))
+  cart.totalPrice = (
+    Number(cart.itemsPrice) +
+    Number(cart.shippingPrice) +
+    Number(cart.taxPrice)
+  ).toFixed(2)
+
+  const dispatch = useDispatch()
+
+  //place order
+
+  const placeorderHandler = (e) => {
+    e.preventDefault()
+    dispatch(
+      createOrder({
+        orderItems: cart.cartItems,
+        shippingAddress: cart.shippingAddress,
+        paymentMethod: cart.paymentMethod,
+        itemsprice: cart.itemsPrice,
+        taxPrice: cart.taxPrice,
+        shippingPrice: cart.shippingPrice,
+        totalPrice: cart.totalPrice,
+      })
+    )
+  }
   return (
     <>
       <CheckoutStep step1 step2 step3 step4 />
@@ -53,9 +96,9 @@ const PlaceOrderScreen = () => {
                         </Col>
 
                         <Col md={4}>
-                          {`${item.qty} * ${item.price} = ${
+                          {`${item.qty} * ${item.price} = ${(
                             item.qty * item.price
-                          } `}
+                          ).toFixed(2)} `}
                         </Col>
                       </Row>
                     </ListGroup.Item>
@@ -95,6 +138,16 @@ const PlaceOrderScreen = () => {
                   <Col>{cart.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
+              <ListGroup.Item>
+                {error && <Message variant='danger'>{error}</Message>}
+              </ListGroup.Item>
+              <Button
+                variant='primary'
+                onClick={placeorderHandler}
+                className='btn-block'
+              >
+                Place Order
+              </Button>
             </ListGroup>
           </Card>
         </Col>
